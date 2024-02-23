@@ -1,7 +1,6 @@
 module PhantomEvents
   module Adapters
     class ActiveJobAdapter
-
       def initialize(listeners_path:,
                      parent_class: ActiveJob::Base,
                      default_queue: :default)
@@ -13,13 +12,11 @@ module PhantomEvents
       end
 
       def handle_event(event_name, *args, **kwargs)
-        listeners_for_event(event_name).each do |listener_klass|
+        listeners.each do |listener_klass|
+          next unless listener_klass._handles_event?(event_name)
+
           AdapterJob.perform_later(listener_klass, event_name, *args, **kwargs)
         end
-      end
-
-      def handles_event?(event_name)
-        listeners_for_event(event_name).any?
       end
 
       private
@@ -33,15 +30,8 @@ module PhantomEvents
         end
       end
 
-      def listeners_for_event(event_name)
-        listeners.select do |listener|
-          listener.instance_methods.include?(event_name)
-        end
-      end
-
       def setup_adapter_job_class!
         klass = Class.new parent_class do
-
           def perform(klass, event_name, *args, **kwargs)
             klass.new.public_send(event_name, *args, **kwargs)
           end

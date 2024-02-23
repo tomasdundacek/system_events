@@ -1,6 +1,7 @@
 # Changelog
 
 ## [Unreleased]
+* Mix-and-match kwargs
 
 ## [0.0.3] - 2023-01-15
 * Update Sidekiq Adapter to be Sidekiq 7 compatible
