@@ -21,10 +21,6 @@ module PhantomEvents
         exchange.publish(message)
       end
 
-      def handles_event?(_)
-        true
-      end
-
       private
 
       attr_accessor :dsn, :exchange_name
