@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 * Mix-and-match kwargs
+  * Your listeners now do not need to listen for all kwargs sent by the event
+  * However you need to include `PhantomEvents::Listener` in order for your listeners to work correctly
 
 ## [0.0.3] - 2023-01-15
 * Update Sidekiq Adapter to be Sidekiq 7 compatible
