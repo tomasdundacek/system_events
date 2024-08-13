@@ -3,10 +3,14 @@ module PhantomEvents
     class ActiveJobAdapter
       def initialize(listeners_path:,
                      parent_class: ActiveJob::Base,
-                     default_queue: :default)
+                     default_queue: :default,
+                     retries: 5,
+                     retry_interval: 5)
         @listeners_path = listeners_path
         @parent_class = parent_class
         @default_queue = default_queue
+        @retries = retries
+        @retry_interval = retry_interval # ignored with sidekiq queue_adapter
 
         setup_adapter_job_class!
       end
@@ -21,7 +25,8 @@ module PhantomEvents
 
       private
 
-      attr_reader :listeners_path, :parent_class, :default_queue
+      attr_reader :listeners_path, :parent_class, :default_queue, :retries,
+                  :retry_interval
 
       def listeners
         listeners_path.glob("**/*.rb").map do |pathname|
@@ -37,6 +42,14 @@ module PhantomEvents
           end
         end
         klass.queue_as default_queue
+
+        if Rails.application.config.active_job.queue_adapter == :sidekiq
+          klass.retry_on StandardError, attempts: 0
+          klass.sidekiq_options retry: retries
+        else
+          klass.retry_on StandardError, wait: retry_interval,
+                                        attempts: retries
+        end
 
         self.class.send(:remove_const, :AdapterJob) if defined?(AdapterJob)
         self.class.const_set(:AdapterJob, klass)
