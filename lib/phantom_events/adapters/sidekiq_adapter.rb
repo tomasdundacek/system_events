@@ -39,7 +39,7 @@ module PhantomEvents
             args.each do |arg|
               arg.with_indifferent_access if arg.is_a?(Hash)
             end
-            klass.safe_constantize.new.public_send(event_name, *args, **kwargs)
+            klass.safe_constantize.new._handle_event(event_name, *args, **kwargs)
           end
         end
         klass.sidekiq_options queue: default_queue

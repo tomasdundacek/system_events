@@ -38,7 +38,7 @@ module PhantomEvents
       def setup_adapter_job_class!
         klass = Class.new parent_class do
           def perform(klass, event_name, *args, **kwargs)
-            klass.new.public_send(event_name, *args, **kwargs)
+            klass.new._handle_event(event_name, *args, **kwargs)
           end
         end
         klass.queue_as default_queue
