@@ -3,6 +3,13 @@ module PhantomEvents
 
     def self.included(base)
       base.extend(ClassMethods)
+      base.instance_variable_set(:@__enqueue_options, {})
+      base.singleton_class.class_eval do
+        def inherited(subclass)
+          super
+          subclass.instance_variable_set(:@__enqueue_options, {})
+        end
+      end
     end
 
     def _handle_event(event_name, *args, **kwargs)
@@ -25,6 +32,12 @@ module PhantomEvents
     end
 
     module ClassMethods
+      attr_reader :__enqueue_options
+
+      def enqueue_options(queue: nil)
+        @__enqueue_options = { queue: }
+      end
+
       def _handles_event?(event_name)
         instance_methods.include?(event_name)
       end

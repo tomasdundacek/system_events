@@ -19,7 +19,12 @@ module PhantomEvents
         listeners.each do |listener_klass|
           next unless listener_klass._handles_event?(event_name)
 
-          AdapterJob.perform_later(listener_klass, event_name, *args, **kwargs)
+          binding.pry if listener_klass.__enqueue_options.nil?
+          queue = listener_klass.__enqueue_options[:queue] || default_queue
+
+          AdapterJob
+            .set(queue:)
+            .perform_later(listener_klass, event_name, *args, **kwargs)
         end
       end
 

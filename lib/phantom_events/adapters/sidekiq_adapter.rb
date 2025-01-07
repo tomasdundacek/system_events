@@ -13,10 +13,20 @@ module PhantomEvents
         listeners.each do |listener_klass|
           next unless listener_klass._handles_event?(event_name)
 
+          queue = listener_klass.__enqueue_options[:queue] || default_queue
+
           args.each do |arg|
             arg.stringify_keys! if arg.is_a?(Hash)
           end
-          AdapterJob.perform_async(listener_klass.to_s, event_name.to_s, *args, kwargs.to_hash)
+
+          AdapterJob
+            .set(queue:)
+            .perform_async(
+              listener_klass.to_s,
+              event_name.to_s,
+              *args,
+              kwargs.to_hash
+            )
         end
       end
 
